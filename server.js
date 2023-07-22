@@ -10,4 +10,11 @@ const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
-git
+
+//Router area//
+require('./routes/routes')(app);
+
+// Start  server//
+app.listen(PORT, () => {
+  console.log(`Server is listening on http://localhost:${PORT}`)
+})
