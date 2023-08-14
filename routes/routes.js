@@ -2,77 +2,66 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = app => {
-    const dbPath = path.join(__dirname, 'db', 'db.json');
 
-};
-    // Read initial notes 
-    let notes = [];
+    // Setup area//
+    fs.readFile(path.join(__dirname,'../db/db.json'),'utf8', (err, data) => {
 
-    fs.readFile(dbPath, 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error reading file:', err);
-            // Handle the error 
-            return;
-        }
-        try {
-            notes = JSON.parse(data);
-        } catch (parseErr) {
-            console.error('Error parsing JSON:', parseErr);
-         
-        
-        }
-    });
-    
+        if (err) throw err;
 
-    // API routes
-    app.get('/', (req, res) => {
-        res.sendFile(path.join(__dirname, '../public/index.html'));
-    });
+        var notes = JSON.parse(data);
 
-    app.get('/api/notes', (req, res) => {
-        res.json(notes);
-    });
+        // API route setup area//
+        app.get('/', function(req, res) {
+            res.json(path.join(__dirname,'../public/index.html'));
+          });
 
-    app.post('/api/notes', (req, res) => {
-        const newNote = req.body;
-        notes.push(newNote);
-        updateDb();
-        res.json(newNote);
-    });
-
-    app.get('/api/notes/:id', (req, res) => {
-        const noteId = parseInt(req.params.id);
-        if (noteId >= 0 && noteId < notes.length) {
-            res.json(notes[noteId]);
-        } else {
-            res.status(404).send("Note not found");
-        }
-    });
-
-    app.delete('/api/notes/:id', (req, res) => {
-        const noteId = parseInt(req.params.id);
-        if (noteId >= 0 && noteId < notes.length) {
-            notes.splice(noteId, 1);
-            updateDb();
-            res.sendStatus(204); // No Content
-        } else {
-            res.status(404).send("Note not found");
-        }
-    });
-
-    // HTML page routes
-    app.get('/notes', (req, res) => {
-        res.sendFile(path.join(__dirname, '../public/notes.html'));
-    });
-
-    app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, '../public/index.html'));
-    });
-
-    // Update the db.json file
-    function updateDb() {
-        fs.writeFile(dbPath, JSON.stringify(notes, null, '\t'), err => {
-            if (err) throw err;
+        // notes//
+        app.get('/api/notes', function(req, res) {
+            // Read the db.json file and return all saved notes as JSON.
+            res.json(notes);
         });
-    };
 
+        // after area//
+        app.post('/api/notes', function(req, res) {
+            // Receives new note ifo//
+            let newNote = req.body;
+            notes.push(newNote);
+            updateDb();
+            return console.log("new note added : "+newNote.title);
+        });
+
+        // note with id//
+        app.get('/api/notes/:id', function(req,res) {
+            res.json(notes[req.params.id]);
+        });
+
+        // delete notes//
+        app.delete('/api/notes/:id', function(req, res) {
+            notes.splice(req.params.id, 1);
+            updateDb();
+            console.log("note with id is deleted"+req.params.id);
+        });
+
+        //see routes//
+
+        // show notes.html 
+        app.get('/notes', function(req,res) {
+            res.sendFile(path.join(__dirname, '../public/notes.html'));
+        });
+        
+        // show index.html 
+        app.get('*', function(req,res) {
+            res.sendFile(path.join(__dirname,'../public/index.html'));
+        });
+
+        //updates files//
+        function updateDb() {
+            fs.writeFile(path.join(__dirname,'../db/db.json'),JSON.stringify(notes,'\t'),err => {
+                if (err) throw err;
+                return true;
+            });
+        }
+
+    });
+
+}
