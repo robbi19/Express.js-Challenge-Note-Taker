@@ -2,15 +2,27 @@ const fs = require('fs');
 const path = require('path');
 
 module.exports = app => {
-    const dbPath = path.join(__dirname, '../db/db.json');
+    const dbPath = path.join(__dirname, 'db', 'db.json');
 
-    // Read initial notes data from the db.json file
+};
+    // Read initial notes 
     let notes = [];
 
     fs.readFile(dbPath, 'utf8', (err, data) => {
-        if (err) throw err;
-        notes = JSON.parse(data);
+        if (err) {
+            console.error('Error reading file:', err);
+            // Handle the error 
+            return;
+        }
+        try {
+            notes = JSON.parse(data);
+        } catch (parseErr) {
+            console.error('Error parsing JSON:', parseErr);
+         
+        
+        }
     });
+    
 
     // API routes
     app.get('/', (req, res) => {
@@ -62,5 +74,5 @@ module.exports = app => {
         fs.writeFile(dbPath, JSON.stringify(notes, null, '\t'), err => {
             if (err) throw err;
         });
-    }
-};
+    };
+
